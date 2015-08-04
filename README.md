@@ -32,5 +32,13 @@ In both of the above, the default generated Java location is:
 target/generated-sources/jabsc
 ```
 
+To completely test if the ABS sources properly compile to Java and then compile to JVM byte code:
+
+```bash
+$ mvn clean compile
+```
+
+The `jabsc` Maven plugin automatically binds to the project before `compile` phase and generates Java sources.
+
 [1]: https://github.com/CrispOSS/jabsc
 [2]: https://github.com/CrispOSS/abs-api-parent
