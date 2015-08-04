@@ -2,7 +2,7 @@
 
 This modules contains our reference examples of ABS code and how we use [`jabsc`][1] to generate Java code for them. 
 
-The master use the latest SNAPSHOT version of the dependencies. You might need to clone and build [`jabs`][1] and [`jabsc`][2] locally and build them for this module. Or, you can change `pom.xml` for release versions of the dependencies:
+The master use the latest SNAPSHOT version of the dependencies. You might need to clone and build [`jabs`][2] and [`jabsc`][1] locally and build them for this module. Or, you can change `pom.xml` for release versions of the dependencies:
 
 * Java API for ABS: `jabs` ![Maven Central](https://img.shields.io/maven-central/v/com.github.crisposs/abs-api.svg?style=flat-square)
 * ABS Compiler to Java: `jabsc` ![Maven Central](https://img.shields.io/maven-central/v/com.github.crisposs/jabsc.svg?style=flat-square)
@@ -33,3 +33,4 @@ target/generated-sources/jabsc
 ```
 
 [1]: https://github.com/CrispOSS/jabsc
+[2]: https://github.com/CrispOSS/abs-api-parent
