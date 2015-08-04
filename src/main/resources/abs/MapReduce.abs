@@ -96,7 +96,8 @@ class Worker(MapReduce master) implements Worker {
   		pattern_index = pattern_index + 1;
   	}
   	
-  	this.emitMapResult(pattern, Pair(max_matching_length, key + ";" + max_matching_string));
+  	Int finalLength = max_matching_length;
+  	this.emitMapResult(pattern, Pair(finalLength, key + ";" + finalLength));
   	
     /*String content = value;
     Int maxIndex = strlen(content) - 1;
@@ -189,7 +190,9 @@ class Worker(MapReduce master) implements Worker {
       }
       results = tail(results);
     }
-    this.emitReduceResult(key, Pair(max, match));
+    Int finalMax = max;
+    String finalMatch = match;
+    this.emitReduceResult(key, Pair(finalMax, finalMatch));
   }
 
   // These methods can be overridden in deltas to contain cost
@@ -219,7 +222,7 @@ class Worker(MapReduce master) implements Worker {
   List<Pair<String, Pair<Int, String>>> invokeMap(String key, List<String> value) {
     mapResults = null;
     List<String> entries = value;
-    this.onMapStart(key, entries);
+    this.onMapStart(key, value);
     while (~(entries == null)) {
     	String entry = head(entries);
     	entries = tail(entries);  	
@@ -306,7 +309,9 @@ class MapReduce implements MapReduce {
       // "Map, written by the user, takes an input pair and produces a
       // set of intermediate key/value pairs." [MapReduce, pg. 2]
 	  Worker w = this.getWorker();
-      Fut<List<Pair<String, Pair<Int, String>>>> fMap = w!invokeMap(key, value);
+	  String finalKey = key;
+	  List<String> finalValue = value;
+      Fut<List<Pair<String, Pair<Int, String>>>> fMap = w!invokeMap(finalKey, finalValue);
       fMapResults = Cons(fMap, fMapResults);
       //fMapResults = insertElement(fMapResults, fMap);
     }
