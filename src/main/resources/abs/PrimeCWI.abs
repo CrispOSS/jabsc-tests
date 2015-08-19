@@ -45,6 +45,10 @@ class Generator (Int limit, Int elem) implements IGen{
     	i = i - 2;
     	}
     }
+    
+    Unit print() {
+    	println(this.primes);
+    }
 
 
 //method for sieving using the current prime number. To be run in parallel by all processors.
@@ -53,8 +57,9 @@ class Generator (Int limit, Int elem) implements IGen{
 			
 			Int k=1;	
 				
-			while(k<elem){					
-				Fut<Bool> f = lookupUnsafe(processors_Map, k)!sieve(n);
+			while(k<elem){
+				Int finalK = k;					
+				Fut<Bool> f = lookupUnsafe(processors_Map, finalK)!sieve(n);
 				k=k+1;
 			}
 			
@@ -123,7 +128,8 @@ class Sieve(Int p, Int size, Int pe) implements ISieve {
 }
 
 { // Main block:
-	IGen g=new Generator(50000,1);
+	Generator g=new Generator(50000,1);
 	Fut<Unit> f = g!run_par();
 	await f?;
+	g.print();
 }
