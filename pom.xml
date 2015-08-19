@@ -27,6 +27,9 @@
 		<version.abs-api>1.0.0-SNAPSHOT</version.abs-api>
 		<version.jabsc>1.0.0-SNAPSHOT</version.jabsc>
 		<version.jabsc-maven-plugin>1.0.0-SNAPSHOT</version.jabsc-maven-plugin>
+		
+		<jabsc.source.abs>src/main/resources/abs</jabsc.source.abs>
+		<jabsc.source.java>target/generated-sources/jabsc</jabsc.source.java>
 	</properties>
 
 	<build>
@@ -51,7 +54,8 @@
 							<goal>jabsc</goal>
 						</goals>
 						<configuration>
-							<sourceDirectory>${basedir}/src/main/resources/abs</sourceDirectory>
+							<sourceDirectory>${jabsc.source.abs}</sourceDirectory>
+							<outputDirectory>${jabsc.source.java}</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
