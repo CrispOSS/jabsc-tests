@@ -48,22 +48,24 @@ class Generator (Int limit, Int elem) implements IGen{
     
     Unit print() {
     	println(this.primes);
+    	println(this.current_Map);
     }
 
 
 //method for sieving using the current prime number. To be run in parallel by all processors.
 	Unit run_par(){
 		while ((current_Map!=EmptyMap)&&(n*n<limit)){
-			
+			println(n);	
 			Int k=1;	
 				
-			while(k<elem){
-				Int finalK = k;					
-				Fut<Bool> f = lookupUnsafe(processors_Map, finalK)!sieve(n);
-				k=k+1;
-			}
-			
 			if(lookupUnsafe(current_Map,n)==True){
+				while(k<elem){
+					Int finalK = k;
+					ISieve worker = lookupUnsafe(processors_Map, finalK); 					
+					Fut<Bool> f = worker!sieve(n);
+					k=k+1;
+				}
+			
 				primes = Cons(n,primes);
 				current_Map = removeKey(current_Map, n);
 			
@@ -77,6 +79,7 @@ class Generator (Int limit, Int elem) implements IGen{
 			}
 			n=n+2;
 		}
+		
 	}
 }
 
@@ -88,48 +91,47 @@ class Sieve(Int p, Int size, Int pe) implements ISieve {
     
     //Init block. Uses p, size and pe to determine its Map of numbers.
     {
-    i = p + pe*size*2;
-    last = i + size*2 - 2; 
+    this.i = p + pe*size*2;
+    this.last = this.i + size*2 - 2; 
     
-    while (i<= last){
-    	current_Map = insert(current_Map, Pair(last, True));
-    	last = last - 2;
+    while (this.i<= this.last){
+    	current_Map = insert(this.current_Map, Pair(this.last, True));
+    	this.last = this.last - 2;
     	}
-    last = i + size*2;	
+    this.last = this.i + size*2;	
     //i = p + pe*size*2;
     }	
 
 	Bool sieve(Int the_prime){
-	
+		println(the_prime);
 		Int n = the_prime;
 		Int first = n*n;
 		Int j;
-		
-		if(i< first)
+		if(this.i< first)
 			j=first;
 		else{
 			if (first % n == 0){
 				j=first;
 			}
 			else{ 
-				j= (i/n) + (n* (i % n));
+				j= (this.i/n) + (n* (this.i % n));
 			}
 		}
 		
-		while (j<=last){
+		while (j<=this.last){
 			current_Map=put(current_Map,j, False);
 			j = j+(2*n);
 		}
 		
-		
+		println(this.pe);
+    	println(current_Map);
 		return True;	
 		
 	}    
 }
 
 { // Main block:
-	Generator g=new Generator(50000,1);
-	Fut<Unit> f = g!run_par();
-	await f?;
+	Generator g=new Generator(100,4);
+	g.run_par();
 	g.print();
 }
