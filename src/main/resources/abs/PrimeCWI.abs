@@ -79,8 +79,8 @@ class Generator (Int limit, Int elem) implements IGen{
 			}
 			n=n+2;
 		}
-		
 	}
+	
 }
 
 class Sieve(Int p, Int size, Int pe) implements ISieve {
@@ -123,8 +123,6 @@ class Sieve(Int p, Int size, Int pe) implements ISieve {
 			j = j+(2*n);
 		}
 		
-		println(this.pe);
-    	println(current_Map);
 		return True;	
 		
 	}    
