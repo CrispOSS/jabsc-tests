@@ -1,0 +1,379 @@
+module ParProRR;
+
+//GVGDWGG
+
+// The mutable-array operations
+
+
+//fimport getTime from System.Clock;
+//fimport diffTimeSpec from System.Clock;
+//fimport Clock from System.Clock;
+//fimport TimeSpec from System.Clock;
+
+// WRITE AND INCLUDE THIS FUNCTION FOR NOW in your module
+// this functions computes the difference between two time measurements
+def TimeSpec diff(TimeSpec a, TimeSpec b) = diffTimeSpec(a,b);
+
+def Int workers() = 4;         // how many workers (threads) running in parallel
+
+def Int d() = 3;               // the attachment (friendliness) degree
+
+def Int num() = 1000;         // the maximum people we want to simulate
+
+//def Int num0() = 5;            // how many people in the start
+
+def Int kinit() = d() * (d() + 1); // the given initial "social" connections (cells, edges*2) (the initial social is a complete graph)
+
+def Int graphArraySize() = num() * d() ;          // the size of the graph-array. number-of-edges * 2
+
+def Int workerSize() = ((num()) / workers()) * d(); // the size of the chunk of the graph-array for each worker
+
+//def ArrayList<Int> graphArray = new ArrayList(graphArraySize());
+
+//def ArrayList<IWorker> workerArray = new ArrayList(workers()); // TODO: it contains an extra element, change it to (1, workers)
+
+
+interface IWorker {
+  Unit run_();
+  Unit init_();
+}
+
+interface IPassive {
+  Unit delegate(Int ft, Int source, Int target);
+}
+
+class Passive(Int f, ArrayList<Int> graphArray) implements IPassive {
+    Random g;       // does not matter that much what we pass to mkStdGen; the more distinctive number between workers, the better
+
+	{
+	this.g= new Random(f);
+	}
+	
+    Unit delegate(Int ft, Int source, Int target) {
+		//println(toString(target));
+		println(this.graphArray);
+        await this.graphArray.get(ft)!=0?;
+        Int u = this.graphArray.get(ft);
+        Bool b = this.conflictCheck(u, target);
+        if (b) {
+		    Int te = ((target - 1)/d()) * d();
+            Int source = g.nextInt(te) + 1;
+            Int c = this.graphArray.get(source);
+            this.delegate(c, source, target);
+			//println(toString(target*1000));
+        }
+        else {
+		    this.graphArray.set(target,u) = u;
+		    //println(toString(target*100000));
+       }
+
+    }
+    Bool conflictCheck(Int value, Int target) {
+        Int fCurrentNode = ((target - 1)/d()) * d() + 1;
+        Int lCurrentNode = fCurrentNode + d() - 1;
+        Int item = 0;
+        Bool found = False;
+		Int i = fCurrentNode;
+        Int v = 0;
+        while (i <= lCurrentNode) {
+//		if (this.f == 31) {println(toString(i));}
+	        Int c = this.graphArray.get(i);
+	        Bool b = (c == 0);
+	        if (not(b)) {
+		        v = c;
+//			if (this.f == 31) {println(toString(v));}
+        	    if (value == v) {
+                  	found = True;
+                  	i = lCurrentNode + 1; //just to break the while
+		        }
+            }
+            i = i + 1;
+        }
+//	if (this.f == 31) println("--");
+        return found;
+    }
+}
+
+
+class Worker(Int f, Int l, Int actNum, def ArrayList<Int> graphArray) implements IWorker {
+   ArrayList<Fut<Unit>> getsDels;
+   Random g = new Random(f);     // does not matter that much what we pass to mkStdGen; the more distinctive number between workers, the better
+   Int getBound = 0;
+    
+   {
+    getBound = (l - f + 1);
+	getsDels = new ArrayList<Fut<Unit>>(getBound);
+   }
+
+	Unit init_() {
+	Int index = 0;
+	Int c;
+	if (f == 1)
+		index = kinit + 1;
+	else
+		index = f;
+
+	while (index <= l)
+	{
+		c = 0;
+		this.graphArray.set(index, c);
+		index = index + 1;
+	}
+
+	}
+
+   Unit run_() {
+       Int i = 1;
+       Int temp = f - 1;
+	   Int getIndex = 1;
+       Int j = 0;
+	   IWorker otherWorker;
+       IPassive p = new local Passive(f, this.graphArray);
+	i = d + 2 + (actNum - 1) ; temp = kinit + (actNum - 1) * d;
+	//println(toString(i)); println(toString(temp));
+       // makes new social connections (edges)
+	Int numOfNodes = (l - f + 1) / d();
+    Int source = 0;
+    Int target = 0;
+	Int u = 0;
+    Int coin = 0;
+    Int pair__ ;
+       while (i <= num) {
+           j = 1;
+           source = 0;
+           target = 0;
+	       u = 0;
+           while (j <= d()) {
+           	   pair__ = g.nextInt(temp) + 1;
+               source = pair__;
+               target = temp + j;
+		//println(toString(source));
+		u = 0;
+		//if (target > graphArraySize) {println(toString(i)); println(toString(target));}
+        pair__ = g.nextInt(2);
+		coin  = pair__;
+        if (coin == 0){
+			if (source > kinit())
+				u = (source - 1) / d() + 1;
+			else 
+			{
+				Int proFromInit = this.graphArray.get(source);
+				u = proFromInit;
+				if (u == -1)
+					j = j - 1;
+				else
+					u = (source - 1) / d() + 1;
+
+			}
+		
+		}
+		else
+		{
+			c = this.graphArray.get(source);
+			Bool b = c==0;
+			if (b) {
+				Fut<Unit> fi2 = p ! delegate(c, source, target);
+//			if (this.f == 31) println(toString(target));
+//			if (this.f == 31) println(toString(source));
+				getsDels.set(getIndex, fi2);
+				getIndex = getIndex + 1;
+			}
+			else{
+				u = c;
+				if (u == -1) j = j - 1;}
+		}
+
+		if (u > 0) {
+		    Int k = temp + 1;
+		    Bool isConflict = False;
+		    while (k < target) {
+			pro_temp  = this.graphArray.get(k);
+			k = k + 1;
+			Bool b2 = pro_temp==0;
+			if (not(b2)) {		// redundant
+				Int real_temp = pro_temp;
+				if (u == real_temp) {
+					isConflict = True;
+					k = target;
+				}
+			}
+		    }
+		    if (isConflict) //redundant assignment to isConflict at the begining each time
+			{j = j - 1;}
+		    else {
+		    	this.graphArray.set(target,u);
+		    	
+		    }
+		}	
+		j = j + 1;
+           }
+	  i = i + workers;
+	  temp = temp + d * workers ;
+	 
+       }
+//i =1;
+//Int ss = 0;
+//if (f == 1)
+//while(i<=l)
+//{
+//	Promise<Int> c = readArray(this.graphArray, i);
+//	Bool b = c.pro_isempty;
+//	if (not(b))
+//	ss = c.pro_get;
+//	else println("0");
+//	println(toString(ss));
+//	i = i + 1;
+//}
+       // one while loops to synchronize
+       i = 1;
+       while (i <= getIndex - 1) {
+           Fut<Unit> f = getsDels.get(i);
+	       await f?;
+	       i = i + 1;
+       }
+
+   }
+
+}
+
+
+{
+ // init-clique initializes the started complete sub-graph
+ Int index = 1;
+ Int i = 1;                     // i is for the 1st-loop
+ Int j = 0;                     // j is for the 2nd-loop
+ Fut<Unit>  fu;                 // each edge created is (i,j)
+ Int c;
+ ArrayList<IWorker> workerArray;
+ ArrayList<Int> graphArray;
+i = 0;
+workerArray = new ArrayList(workers());
+graphArray = new ArrayList(graphArraySize());
+
+ while (i <= d()) {
+     j = 1;
+     while (j <= d()) {
+	c = 0;
+	index = j + (i * d());
+	if (j <= i) c=j; else c=-1;
+        this.graphArray.set(index, c);
+	j = j + 1;
+     }
+     i = i + 1;
+ }
+//index = index + 1;
+// // create workers
+
+//	while (index <= graphArraySize())
+//	{
+//		c = 0;
+//		this.graphArray.set(index, c);
+//		index = index + 1;
+//	}
+
+ i = 1;
+ IWorker w;
+ Int l = 0;
+ while (i<workers()) {
+     Int f = (i-1) * workerSize() + 1;
+     l = i * workerSize();
+     w = new Worker(f, l, i, graphArray);
+     workerArray.set(i-1, w);
+	 i = i + 1;
+ }
+
+ w = new Worker(l + 1, graphArraySize(), i);
+workerArray.set(workers()-1, w);
+
+
+//Int numTemp = num - num0;
+//Int shareTemp = workers * (workers + 1) / 2;
+//Int wholeShare = workers * shareTemp;
+//Int thisShare = shareTemp + workers - 1;
+////println(toString(share));
+////println(toString(numTemp));
+//i = 1;
+//Int lBefore = k0();
+//while (i < workers)
+//{
+//	Int f = lBefore + 1;
+//	l = f + (numTemp * (thisShare) / wholeShare) * 2 * d() - 1;
+//	println(toString(f));
+//	println(toString(l));
+//    w = new Worker(f, l);
+//     writeArray(workerArray(), i-1, w);
+//	lBefore = l;
+//	thisShare = thisShare - 2;
+//	 i = i + 1;	
+
+//}
+
+
+//if (workers() != 1) {
+// w = new Worker(l + 1, graphArraySize());
+// writeArray(workerArray(), workers()-1, w);
+//}
+//else
+//{
+// w = new Worker(k0() + 1, graphArraySize());
+// writeArray(workerArray(), workers()-1, w);
+//}
+
+ ArrayList <Fut<Unit>> syncArray = new ArrayList(workers()); // TODO: also has to change to (0, workers)
+
+//Start initialization of the array in a parallel way
+
+ Fut<Unit> ff;
+i = 0;
+ while (i < workers) {
+     w = workerArray.get(i);
+	 ff = w ! init_();
+     syncArray.set(i, ff);
+	 i = i + 1;
+ }
+
+
+// wait for workers to make sure all the array is initialized
+
+ i = 0;
+ while (i < workers) {
+     ff = syncArray.get(i);
+	 ff.get;
+	 i = i + 1;
+ }
+ println("START RUNNING");
+  Int t1 = System.currentTimeMillis(); // getTime(Monotonic) takes a measurement
+ // run workers
+i = 0;
+ while (i < workers) {
+     w = workerArray.get(i);
+	 ff = w ! run_();
+     syncArray.set(i, ff);
+	 i = i + 1;
+ }
+ // wait for workers
+
+ i = 0;
+ while (i < workers) {
+     syncArray.get(i);
+	 ff.get;
+	 i = i + 1;
+ }
+  Int t2 = System.currentTimeMillis();
+
+  Int t3 = t2-t1;    //  compute the difference       (t2 - t1)
+
+  println(t3);  
+//i = 1;
+//while(i<=graphArraySize)
+//{
+//	c = readArray(graphArray, i);
+//	Int ss = c.pro_get;
+//	println(toString(ss));
+//	i = i + 1;
+//}
+
+  // Test t = new local TestPro();
+  // t.test(graphArray(), graphArraySize() - k0(), k0() + 1, graphArraySize());
+
+}
