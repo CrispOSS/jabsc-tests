@@ -15,6 +15,7 @@ class Foo implements IFoo{
 	
 	Unit setID(String new_id){
 		this.id=new_id;
+		println("new id: " + this.id);
 	}
 	
 	Int printID(){
