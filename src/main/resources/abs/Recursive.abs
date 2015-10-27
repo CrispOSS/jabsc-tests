@@ -39,15 +39,17 @@ class B implements Binterface {
 	A master = new A ( );
 	List<Fut<Int>> futures = EmptyList;
 	
-	while (i < 1){
-		Fut<Int> f = master ! recursive_m (10);
+	while (i < 1000){
+		Fut<Int> f = master ! recursive_m (1000);
 		futures = Cons( f, futures );
 		i = i + 1 ;
 	}
+	i=0;
 	while ( size(futures) > 0 ){
 	
 		Fut<Int> f = head(futures);
 		futures = tail(futures);
-		f.get ;
+		Int r = f.get;
+		i = i + r ;
 	}
 }
